@@ -3,6 +3,8 @@ const express = require("express");
 const app = express();
 const port = 3002;
 
+const googleApiKey = "AIzaSyC_98c8go6FbejPvJwLUDpKhdAF6pkGCh8";
+
 app.get("/autocomplete/:text", async (req, res) => {
   const API_KEY =
     "4YOz0Q3d2ZErUMi0QIYBrmYpfTXhzfJ2LQa-jaNkS9Nhyy6h5NmlaRANT7cJbobyff7P3aHPy28VfMCcaAhK7Z6nlPwTCodIf0YYXtJEJ-4tzy5d5jiyLzbZdSc6Y3Yx";
@@ -13,6 +15,35 @@ app.get("/autocomplete/:text", async (req, res) => {
       { headers }
     );
     res.json(data.data);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+app.get("/submit/:location/:category/:keyword/:distance", async (req, res) => {
+  try {
+    const googleResponse = axios.get(
+      "https://maps.googleapis.com/maps/api/geocode/json?address=" +
+        req.params.location +
+        "key=" +
+        googleApiKey
+    );
+    console.log("google response", googleResponse);
+    const { lat: latitude, lng: longitude } =
+      googleResponse.data.results[0].geometry.location;
+
+    const data = await axios.get(
+      "https://api.yelp.com/v3/businesses/search?term=" +
+        req.params.keyword +
+        "&latitude=" +
+        latitude +
+        "&longitude=" +
+        longitude +
+        "&categories=" +
+        req.params.category +
+        "&radius=" +
+        req.params.distance
+    );
   } catch (e) {
     console.log(e);
   }
